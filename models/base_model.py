@@ -13,7 +13,6 @@ class BaseModel(object):
             self.id = str(uuid.uuid4())
             self.created_at = datetime.datetime.now()
             self.updated_at = datetime.datetime.now()
-            storage.new(self)
         else:
             for key, value in kwargs.items():
                 if key == '__class__':
@@ -21,11 +20,13 @@ class BaseModel(object):
                 if key == 'created_at' or key == 'updated_at':
                     value = datetime.datetime.strptime(
                         value, '%Y-%m-%dT%H:%M:%S.%f')
-                self.__setattr__(key, value)
+                setattr(self, key, value)
+        storage.new(self)
 
     def __str__(self):
         """Return string representation of the object"""
-        return f'[{__class__.__name__}({self.id}){self.__dict__}]'
+
+        return f'[{type(self).__name__}({self.id}){self.__dict__}]'
 
     def save(self):
         """Save object to json"""
@@ -35,7 +36,7 @@ class BaseModel(object):
     def to_dict(self):
         """Convert object to dictionary"""
         new_dict = self.__dict__.copy()
-        new_dict['__class__'] = __class__.__name__
+        new_dict['__class__'] = type(self).__name__
         new_dict["created_at"] = new_dict["created_at"].isoformat()
         new_dict["updated_at"] = new_dict["updated_at"].isoformat()
 
